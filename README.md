@@ -40,7 +40,7 @@ Une API REST complète pour la gestion de restaurants, avec interface client et 
 
 1. Clonez le dépôt
 ```bash
-git clone https://github.com/NicolasSchutz73/api-restaurant.git
+git clone https://github.com/NicolasSchutz73/api-m1-resto.git
 cd api-restaurant
 ```
 
