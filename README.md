@@ -115,20 +115,6 @@ Une collection Postman est fournie pour tester facilement l'API. Pour l'utiliser
 - GET `/api/users/profile` : Profil de l'utilisateur connecté
 - PUT `/api/users/profile` : Modifier le profil
 
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! N'hésitez pas à :
-
-1. Fork le projet
-2. Créer une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push sur la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
-
-## 📝 Licence
-
-Ce projet est sous licence MIT.
-
 ## 👨‍💻 Auteur
 
 Nicolas Schutz
