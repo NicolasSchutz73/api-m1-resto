@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Commandes</title>
+</head>
+<body>
+    <button onclick="window.location.href='restaurants.html'">Retour</button>
+    <h1>Mes Commandes</h1>
+    
+    <div id="ordersList"></div>
+
+    <script>
+        async function fetchOrders() {
+            try {
+                const response = await fetch('http://localhost:3000/api/orders/my-orders', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('userToken')
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des commandes');
+                }
+
+                const orders = await response.json();
+                displayOrders(orders);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('ordersList').innerHTML = 'Erreur lors du chargement des commandes';
+            }
+        }
+
+        function displayOrders(orders) {
+            const container = document.getElementById('ordersList');
+            container.innerHTML = '';
+
+            if (orders.length === 0) {
+                container.innerHTML = '<p>Vous n\'avez pas encore de commandes</p>';
+                return;
+            }
+
+            orders.forEach(order => {
+                const date = new Date(order.createdAt).toLocaleDateString();
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h3>Commande du ${date}</h3>
+                    <p>Total: ${order.totalAmount}€</p>
+                    <hr>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Vérifier si l'utilisateur est connecté
+        if (!localStorage.getItem('userToken')) {
+            window.location.href = 'login.html';
+        } else {
+            fetchOrders();
+        }
+    </script>
+</body>
+</html>

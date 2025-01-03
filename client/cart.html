@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panier</title>
+</head>
+<body>
+    <button onclick="history.back()">Retour</button>
+    <h1>Panier</h1>
+    
+    <div id="cartItems"></div>
+    <div id="totalPrice"></div>
+    <button onclick="placeOrder()" id="payButton">Payer</button>
+
+    <script>
+        function displayCart() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const container = document.getElementById('cartItems');
+            const totalPriceDiv = document.getElementById('totalPrice');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p>Votre panier est vide</p>';
+                totalPriceDiv.innerHTML = '';
+                document.getElementById('payButton').style.display = 'none';
+                return;
+            }
+
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <p>${item.name} - ${item.price}€ x ${item.quantity} = ${itemTotal}€</p>
+                    <button onclick="removeFromCart(${item.dishId})">Supprimer</button>
+                `;
+                container.appendChild(div);
+            });
+
+            totalPriceDiv.innerHTML = `<h3>Total: ${total}€</h3>`;
+            document.getElementById('payButton').style.display = 'block';
+        }
+
+        function removeFromCart(dishId) {
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            cart = cart.filter(item => item.dishId !== dishId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            displayCart();
+        }
+
+        async function placeOrder() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            if (cart.length === 0) return;
+
+            try {
+                // Regrouper les items par restaurant
+                const ordersByRestaurant = {};
+                cart.forEach(item => {
+                    if (!ordersByRestaurant[item.restaurantId]) {
+                        ordersByRestaurant[item.restaurantId] = [];
+                    }
+                    ordersByRestaurant[item.restaurantId].push({
+                        dishId: item.dishId,
+                        quantity: item.quantity
+                    });
+                });
+
+                // Créer une commande pour chaque restaurant
+                for (const [restaurantId, items] of Object.entries(ordersByRestaurant)) {
+                    const response = await fetch('http://localhost:3000/api/orders', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('userToken')
+                        },
+                        body: JSON.stringify({
+                            restaurantId: parseInt(restaurantId),
+                            items: items
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la création de la commande');
+                    }
+                }
+
+                // Vider le panier
+                localStorage.setItem('cart', '[]');
+                alert('Commandes créées avec succès !');
+                window.location.href = 'orders.html';
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la création des commandes');
+            }
+        }
+
+        // Vérifier si l'utilisateur est connecté
+        if (!localStorage.getItem('userToken')) {
+            window.location.href = 'login.html';
+        } else {
+            displayCart();
+        }
+    </script>
+</body>
+</html>

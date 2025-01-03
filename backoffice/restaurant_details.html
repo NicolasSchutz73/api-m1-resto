@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du Restaurant</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            margin: 5px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 300px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="restaurantInfo">
+        <h1>Informations du Restaurant</h1>
+        <div class="form-group">
+            <label for="restaurantName">Nom:</label>
+            <input type="text" id="restaurantName">
+        </div>
+        <div class="form-group">
+            <label for="restaurantEmail">Email:</label>
+            <input type="email" id="restaurantEmail">
+        </div>
+        <div class="form-group">
+            <label for="restaurantAddress">Adresse:</label>
+            <input type="text" id="restaurantAddress">
+        </div>
+        <div class="form-group">
+            <label for="restaurantPostalCode">Code Postal:</label>
+            <input type="text" id="restaurantPostalCode">
+        </div>
+        <div class="form-group">
+            <label for="restaurantCity">Ville:</label>
+            <input type="text" id="restaurantCity">
+        </div>
+        <button onclick="updateRestaurant()">Mettre à jour</button>
+    </div>
+
+    <h2>Plats</h2>
+    <button id="addDish">Ajouter plat</button>
+    <ul id="dishesList">
+        <!-- La liste des plats sera ajoutée ici -->
+    </ul>
+
+    <h2>Commandes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Détail de la commande</th>
+                <th>Montant total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="ordersTableBody">
+            <!-- Les commandes seront ajoutées ici -->
+        </tbody>
+    </table>
+
+    <button id="backButton" style="margin-top: 20px;">Retour à la liste des restaurants</button>
+
+    <script>
+        const restaurantId = new URLSearchParams(window.location.search).get('id');
+        const token = localStorage.getItem('restaurantToken') || localStorage.getItem('adminToken');
+
+        async function fetchRestaurantDetails() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/restaurants/${restaurantId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                const restaurant = await response.json();
+                
+                document.getElementById('restaurantName').value = restaurant.name;
+                document.getElementById('restaurantEmail').value = restaurant.email;
+                document.getElementById('restaurantAddress').value = restaurant.address;
+                document.getElementById('restaurantPostalCode').value = restaurant.postalCode;
+                document.getElementById('restaurantCity').value = restaurant.city;
+            } catch (error) {
+                console.error('Erreur lors de la récupération des détails du restaurant:', error);
+            }
+        }
+
+        async function updateRestaurant() {
+            try {
+                const restaurantData = {
+                    name: document.getElementById('restaurantName').value,
+                    email: document.getElementById('restaurantEmail').value,
+                    address: document.getElementById('restaurantAddress').value,
+                    postalCode: document.getElementById('restaurantPostalCode').value,
+                    city: document.getElementById('restaurantCity').value
+                };
+
+                const response = await fetch(`http://localhost:3000/api/restaurants/${restaurantId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(restaurantData)
+                });
+
+                if (response.ok) {
+                    alert('Restaurant mis à jour avec succès');
+                } else {
+                    const error = await response.json();
+                    alert('Erreur lors de la mise à jour: ' + error.message);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour du restaurant:', error);
+                alert('Erreur lors de la mise à jour du restaurant');
+            }
+        }
+
+        async function fetchDishes() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/dishes?restaurantId=${restaurantId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                const dishes = await response.json();
+                const dishesList = document.getElementById('dishesList');
+                dishesList.innerHTML = '';
+                
+                dishes.forEach(dish => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${dish.name} - ${dish.price}€`;
+                    dishesList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Erreur lors de la récupération des plats:', error);
+            }
+        }
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/orders/restaurant/${restaurantId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const orders = await response.json();
+                const ordersTableBody = document.getElementById('ordersTableBody');
+                ordersTableBody.innerHTML = '';
+                
+                if (!Array.isArray(orders) || orders.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="4" style="text-align: center;">Aucune commande trouvée</td>';
+                    ordersTableBody.appendChild(row);
+                    return;
+                }
+                
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${order.user ? order.user.email : 'Client inconnu'}</td>
+                        <td>${order.orderItems ? order.orderItems.map(item => 
+                            `${item.quantity}x ${item.dish ? item.dish.name : 'Plat inconnu'}`
+                        ).join(', ') : 'Aucun détail'}</td>
+                        <td>${order.totalAmount}€</td>
+                        <td>
+                            <button onclick="deleteOrder(${order.id})">
+                                Supprimer la commande
+                            </button>
+                        </td>
+                    `;
+                    ordersTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erreur lors de la récupération des commandes:', error);
+                const ordersTableBody = document.getElementById('ordersTableBody');
+                ordersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Erreur lors de la récupération des commandes</td></tr>';
+            }
+        }
+
+        async function deleteOrder(orderId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/orders/${orderId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Commande supprimée avec succès');
+                    fetchOrders();
+                } else {
+                    const error = await response.json();
+                    alert('Erreur lors de la suppression de la commande: ' + error.message);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression de la commande:', error);
+                alert('Erreur lors de la suppression de la commande');
+            }
+        }
+
+        document.getElementById('addDish').addEventListener('click', () => {
+            window.location.href = `add_dish.html?restaurantId=${restaurantId}`;
+        });
+
+        document.getElementById('backButton').addEventListener('click', () => {
+            window.location.href = 'restaurants.html';
+        });
+
+        // Charger les détails du restaurant, les plats et les commandes au chargement de la page
+        fetchRestaurantDetails();
+        fetchDishes();
+        fetchOrders();
+    </script>
+</body>
+</html>

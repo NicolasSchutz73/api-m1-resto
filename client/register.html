@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Restaurant App</title>
+</head>
+<body>
+    <h1>Inscription</h1>
+    <div id="error"></div>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+    <br><br>
+
+    <label for="username">Nom:</label>
+    <input type="text" id="username" required>
+    <br><br>
+
+    <label for="password">Mot de passe:</label>
+    <input type="password" id="password" required>
+    <br><br>
+
+    <button onclick="register()">Créer un compte</button>
+    <p>Déjà un compte ? <a href="login.html">Se connecter</a></p>
+
+    <script>
+        async function register() {
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        username,
+                        password,
+                        role: 'USER' // Force le rôle USER pour le client
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erreur lors de l\'inscription');
+                }
+
+                // Redirection vers la page de connexion
+                alert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+                window.location.href = 'login.html';
+            } catch (error) {
+                errorDiv.textContent = error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du Restaurant</title>
+</head>
+<body>
+    <button onclick="window.location.href='restaurants.html'">Retour aux restaurants</button>
+    <h1 id="restaurantName"></h1>
+    
+    <input type="text" id="searchInput" placeholder="Rechercher un plat" oninput="filterDishes()">
+    <button onclick="window.location.href='cart.html'">Voir le panier</button>
+
+    <div id="dishesList"></div>
+
+    <script>
+        const restaurantId = new URLSearchParams(window.location.search).get('id');
+        let allDishes = [];
+
+        async function fetchRestaurantDetails() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/restaurants/${restaurantId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('userToken')
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Restaurant non trouvé');
+                
+                const restaurant = await response.json();
+                document.getElementById('restaurantName').textContent = restaurant.name;
+                document.title = restaurant.name;
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function fetchDishes() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/dishes?restaurantId=${restaurantId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('userToken')
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Erreur lors de la récupération des plats');
+                
+                allDishes = await response.json();
+                displayDishes(allDishes);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('dishesList').innerHTML = 'Erreur lors du chargement des plats';
+            }
+        }
+
+        function displayDishes(dishes) {
+            const container = document.getElementById('dishesList');
+            container.innerHTML = '';
+
+            dishes.forEach(dish => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h3>${dish.name}</h3>
+                    <p>${dish.description || 'Aucune description'}</p>
+                    <p>Prix: ${dish.price}€</p>
+                    <button onclick="window.location.href='dish_details.html?id=${dish.id}'">
+                        Voir les détails
+                    </button>
+                    <hr>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function filterDishes() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredDishes = allDishes.filter(dish => 
+                dish.name.toLowerCase().includes(searchTerm) ||
+                (dish.description && dish.description.toLowerCase().includes(searchTerm))
+            );
+            displayDishes(filteredDishes);
+        }
+
+        // Vérifier si l'utilisateur est connecté
+        if (!localStorage.getItem('userToken')) {
+            window.location.href = 'login.html';
+        } else {
+            fetchRestaurantDetails();
+            fetchDishes();
+        }
+    </script>
+</body>
+</html>

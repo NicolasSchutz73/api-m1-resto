@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurants</title>
+</head>
+<body>
+    <div>
+        <button onclick="window.location.href='profile.html'">Mon Profil</button>
+        <button onclick="window.location.href='cart.html'">Voir le panier</button>
+        <button onclick="window.location.href='orders.html'">Mes Commandes</button>
+    </div>
+
+    <h1>Restaurants</h1>
+    
+    <input type="text" id="searchInput" placeholder="Rechercher un restaurant" oninput="filterRestaurants()">
+
+    <div id="restaurantsList"></div>
+
+    <script>
+        let allRestaurants = [];
+
+        async function fetchRestaurants() {
+            try {
+                const response = await fetch('http://localhost:3000/api/restaurants', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('userToken')
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des restaurants');
+                }
+
+                allRestaurants = await response.json();
+                displayRestaurants(allRestaurants);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('restaurantsList').innerHTML = 'Erreur lors du chargement des restaurants';
+            }
+        }
+
+        function displayRestaurants(restaurants) {
+            const container = document.getElementById('restaurantsList');
+            container.innerHTML = '';
+
+            restaurants.forEach(restaurant => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h3>${restaurant.name}</h3>
+                    <p>${restaurant.address}, ${restaurant.postalCode} ${restaurant.city}</p>
+                    <button onclick="window.location.href='restaurant_details.html?id=${restaurant.id}'">
+                        Voir les plats
+                    </button>
+                    <hr>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function filterRestaurants() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredRestaurants = allRestaurants.filter(restaurant => 
+                restaurant.name.toLowerCase().includes(searchTerm) ||
+                restaurant.city.toLowerCase().includes(searchTerm)
+            );
+            displayRestaurants(filteredRestaurants);
+        }
+
+        // Vérifier si l'utilisateur est connecté
+        if (!localStorage.getItem('userToken')) {
+            window.location.href = 'login.html';
+        } else {
+            fetchRestaurants();
+        }
+    </script>
+</body>
+</html>

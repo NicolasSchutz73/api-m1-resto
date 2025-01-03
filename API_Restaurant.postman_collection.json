@@ -1,0 +1,443 @@
+{
+	"info": {
+		"_postman_id": "1234567890",
+		"name": "API Restaurant",
+		"description": "Collection pour tester l'API de gestion de restaurants",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/auth/login",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Connexion d'un utilisateur (admin, restaurant ou client)"
+					}
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"user1\",\n    \"email\": \"user1@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/auth/register",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Inscription d'un nouvel utilisateur (rôle USER par défaut)"
+					}
+				}
+			]
+		},
+		{
+			"name": "Restaurants",
+			"item": [
+				{
+					"name": "Get All Restaurants",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/restaurants",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "restaurants"]
+						},
+						"description": "Récupérer la liste de tous les restaurants"
+					}
+				},
+				{
+					"name": "Get Restaurant by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/restaurants/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "restaurants", "1"]
+						},
+						"description": "Récupérer les détails d'un restaurant spécifique"
+					}
+				},
+				{
+					"name": "Create Restaurant (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New Restaurant\",\n    \"address\": \"123 Main St\",\n    \"postalCode\": \"12345\",\n    \"city\": \"City\",\n    \"email\": \"restaurant@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/restaurants",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "restaurants"]
+						},
+						"description": "Créer un nouveau restaurant (admin uniquement)"
+					}
+				},
+				{
+					"name": "Update Restaurant",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Restaurant\",\n    \"address\": \"456 New St\",\n    \"postalCode\": \"54321\",\n    \"city\": \"New City\",\n    \"email\": \"updated@example.com\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/restaurants/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "restaurants", "1"]
+						},
+						"description": "Mettre à jour les informations d'un restaurant"
+					}
+				},
+				{
+					"name": "Delete Restaurant (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/restaurants/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "restaurants", "1"]
+						},
+						"description": "Supprimer un restaurant (admin uniquement)"
+					}
+				}
+			]
+		},
+		{
+			"name": "Dishes",
+			"item": [
+				{
+					"name": "Get All Dishes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/dishes?restaurantId=1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "dishes"],
+							"query": [
+								{
+									"key": "restaurantId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Récupérer tous les plats d'un restaurant"
+					}
+				},
+				{
+					"name": "Get Dish by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/dishes/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "dishes", "1"]
+						},
+						"description": "Récupérer les détails d'un plat spécifique"
+					}
+				},
+				{
+					"name": "Create Dish",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New Dish\",\n    \"price\": 15.99,\n    \"restaurantId\": 1\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/dishes",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "dishes"]
+						},
+						"description": "Créer un nouveau plat"
+					}
+				},
+				{
+					"name": "Delete Dish",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/dishes/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "dishes", "1"]
+						},
+						"description": "Supprimer un plat"
+					}
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Get User Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/orders/user",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "orders", "user"]
+						},
+						"description": "Récupérer les commandes de l'utilisateur connecté"
+					}
+				},
+				{
+					"name": "Get Restaurant Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{restaurantToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/orders/restaurant/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "orders", "restaurant", "1"]
+						},
+						"description": "Récupérer les commandes d'un restaurant"
+					}
+				},
+				{
+					"name": "Create Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"restaurantId\": 1,\n    \"items\": [\n        {\n            \"dishId\": 1,\n            \"quantity\": 2\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/orders",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "orders"]
+						},
+						"description": "Créer une nouvelle commande"
+					}
+				},
+				{
+					"name": "Delete Order",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/orders/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "orders", "1"]
+						},
+						"description": "Supprimer une commande"
+					}
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/users/profile",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "users", "profile"]
+						},
+						"description": "Récupérer le profil de l'utilisateur connecté"
+					}
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"Updated Name\",\n    \"email\": \"updated@example.com\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/users/profile",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["api", "users", "profile"]
+						},
+						"description": "Mettre à jour le profil de l'utilisateur connecté"
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "votre_token_ici"
+		},
+		{
+			"key": "adminToken",
+			"value": "token_admin_ici"
+		},
+		{
+			"key": "restaurantToken",
+			"value": "token_restaurant_ici"
+		}
+	]
+}

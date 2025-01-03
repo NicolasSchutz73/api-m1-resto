@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+</head>
+<body>
+    <h1>Connexion</h1>
+    <form id="loginForm">
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" required>
+        </div>
+        <div>
+            <label for="password">Mot de passe:</label>
+            <input type="password" id="password" required>
+        </div>
+        <button type="submit">Se connecter</button>
+    </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Vérifier le rôle de l'utilisateur
+                    if (data.user.role === 'ADMIN') {
+                        localStorage.setItem('adminToken', data.token);
+                        window.location.href = 'restaurants.html';
+                    } else if (data.user.role === 'RESTAURANT') {
+                        localStorage.setItem('restaurantToken', data.token);
+                        const restaurantResponse = await fetch('http://localhost:3000/api/restaurants', {
+                            headers: {
+                                'Authorization': 'Bearer ' + data.token
+                            }
+                        });
+                        const restaurants = await restaurantResponse.json();
+                        const userRestaurant = restaurants.find(r => r.userId === data.user.id);
+                        if (userRestaurant) {
+                            window.location.href = `restaurant_details.html?id=${userRestaurant.id}`;
+                        }
+                    } else {
+                        alert('Accès non autorisé');
+                    }
+                } else {
+                    alert(data.message || 'Erreur de connexion');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la connexion');
+            }
+        });
+    </script>
+</body>
+</html>

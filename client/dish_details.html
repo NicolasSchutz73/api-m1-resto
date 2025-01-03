@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du Plat</title>
+</head>
+<body>
+    <button onclick="history.back()">Retour</button>
+    <button onclick="window.location.href='cart.html'">Voir le panier</button>
+    <h1 id="dishName"></h1>
+    
+    <div id="dishDetails"></div>
+
+    <script>
+        const dishId = new URLSearchParams(window.location.search).get('id');
+        let currentDish = null;
+
+        async function fetchDishDetails() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/dishes/${dishId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('userToken')
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Plat non trouvé');
+                
+                const dish = await response.json();
+                currentDish = dish; // Stocker le plat dans une variable globale
+                displayDishDetails(dish);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('dishDetails').innerHTML = 'Erreur lors du chargement des détails du plat';
+            }
+        }
+
+        function displayDishDetails(dish) {
+            document.getElementById('dishName').textContent = dish.name;
+            document.title = dish.name;
+
+            const container = document.getElementById('dishDetails');
+            container.innerHTML = `
+                <p><strong>Description:</strong> ${dish.description || 'Aucune description'}</p>
+                <p><strong>Prix:</strong> ${dish.price}€</p>
+                <button onclick="addToCart()">Ajouter au panier</button>
+            `;
+        }
+
+        function addToCart() {
+            if (!currentDish) return;
+            
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            
+            // Vérifier si le plat est déjà dans le panier
+            const existingItem = cart.find(item => item.dishId === currentDish.id);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    dishId: currentDish.id,
+                    quantity: 1,
+                    name: currentDish.name,
+                    price: currentDish.price,
+                    restaurantId: currentDish.restaurantId
+                });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert('Plat ajouté au panier !');
+        }
+
+        // Vérifier si l'utilisateur est connecté
+        if (!localStorage.getItem('userToken')) {
+            window.location.href = 'login.html';
+        } else {
+            fetchDishDetails();
+        }
+    </script>
+</body>
+</html>

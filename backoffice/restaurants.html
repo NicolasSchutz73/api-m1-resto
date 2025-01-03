@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Restaurants</title>
+</head>
+<body>
+    <h1>Restaurant</h1>
+    <button id="addRestaurant">Ajouter un restaurateur</button>
+    <h2>Liste des Restaurants</h2>
+    <ul id="restaurantList"></ul>
+    <button id="logout">Déconnexion</button>
+
+    <script>
+        const fetchRestaurants = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/restaurants', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('adminToken')
+                    }
+                });
+                const data = await response.json();
+                const restaurantList = document.getElementById('restaurantList');
+                restaurantList.innerHTML = '';
+
+                data.forEach(restaurant => {
+                    const listItem = document.createElement('li');
+                    const restaurantLink = document.createElement('a');
+                    restaurantLink.href = `restaurant_details.html?id=${restaurant.id}`;
+                    restaurantLink.textContent = `${restaurant.name} (${restaurant.user.email})`;
+                    listItem.appendChild(restaurantLink);
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Supprimer';
+                    deleteButton.onclick = async () => {
+                        await deleteRestaurant(restaurant.id);
+                    };
+                    listItem.appendChild(deleteButton);
+                    restaurantList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Erreur lors de la récupération des restaurants:', error);
+            }
+        };
+
+        const deleteRestaurant = async (id) => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/restaurants/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('adminToken')
+                    }
+                });
+                if (response.ok) {
+                    console.log('Restaurant supprimé');
+                    fetchRestaurants();
+                } else {
+                    console.log('Erreur de suppression');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression du restaurant:', error);
+            }
+        };
+
+        document.getElementById('logout').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            window.location.href = 'login.html';
+        });
+
+        document.getElementById('addRestaurant').addEventListener('click', () => {
+            window.location.href = 'add_restaurant.html';
+        });
+
+        function viewRestaurantDetails(restaurantId) {
+            window.location.href = `restaurant_details.html?id=${restaurantId}`;
+        }
+
+        // Fetch restaurants on page load
+        fetchRestaurants();
+    </script>
+</body>
+</html>
